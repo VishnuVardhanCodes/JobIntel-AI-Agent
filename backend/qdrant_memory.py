@@ -4,11 +4,14 @@ import os
 import uuid
 from dotenv import load_dotenv
 
+# Load environment variables
 load_dotenv()
 
+# Get Qdrant credentials
 QDRANT_URL = os.getenv("QDRANT_URL")
 QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
+# Create client
 client = QdrantClient(
     url=QDRANT_URL,
     api_key=QDRANT_API_KEY
@@ -17,24 +20,40 @@ client = QdrantClient(
 COLLECTION_NAME = "jobintel_memory"
 
 
+# ✅ Create collection if not exists
 def create_collection():
+
     try:
-        client.get_collection(COLLECTION_NAME)
-        print("Collection already exists ✅")
+        # Delete old collection (RESET)
+        client.delete_collection(COLLECTION_NAME)
+        print("Old collection deleted ✅")
 
     except Exception:
-        client.create_collection(
-            collection_name=COLLECTION_NAME,
-            vectors_config=VectorParams(
-                size=384,
-                distance=Distance.COSINE
-            )
+        pass
+
+    # Create fresh collection
+    client.create_collection(
+        collection_name=COLLECTION_NAME,
+        vectors_config=VectorParams(
+            size=384,
+            distance=Distance.COSINE
         )
-        print("Collection created successfully ✅")
+    )
+
+    print("Fresh collection created ✅")
 
 
-# ✅ Check if job already exists
-def check_duplicate(vector):
+# ✅ Generate dummy vector (temporary embedding)
+def generate_vector(text):
+
+    # Temporary dummy embedding
+    return [0.1] * 384
+
+
+# ✅ Check duplicate
+def check_duplicate(text):
+
+    vector = generate_vector(text)
 
     search_result = client.query_points(
         collection_name=COLLECTION_NAME,
@@ -43,25 +62,29 @@ def check_duplicate(vector):
     )
 
     if search_result.points:
+
         score = search_result.points[0].score
 
-        # If similarity high → duplicate
-        if score > 0.90:
+        if score > 0.99:
+
             print("⚠️ Duplicate job detected")
             return True
 
     return False
 
 
-# ✅ Store new job
-def store_job_embedding(vector):
+# ✅ Store job
+def store_job(text):
+
+    vector = generate_vector(text)
 
     client.upsert(
         collection_name=COLLECTION_NAME,
         points=[
             PointStruct(
                 id=str(uuid.uuid4()),
-                vector=vector
+                vector=vector,
+                payload={"text": text}
             )
         ]
     )
@@ -69,5 +92,7 @@ def store_job_embedding(vector):
     print("✅ Job stored in memory")
 
 
+# Run once to create collection
 if __name__ == "__main__":
-    create_collection() 
+
+    create_collection()
