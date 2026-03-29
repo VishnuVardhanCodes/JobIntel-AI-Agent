@@ -1,0 +1,26 @@
+{
+  "agent_name": "Job Intelligence Coordinator",
+  "agent_id": "69c8cba8a264454f5f5ab4b3",
+  "description": "Coordinates the full extraction pipeline \u2014 receives scraped LinkedIn post data, delegates analysis and sheet writing to sub-agents, aggregates results and returns a processing summary to the user",
+  "agent_type": "json",
+  "accessor": "result",
+  "auto_generated": true,
+  "response_schema": {
+    "total_posts_received": "string",
+    "posts_analyzed": "string",
+    "rows_written": "string",
+    "duplicates_skipped": "string",
+    "errors": "string",
+    "processing_summary": "string",
+    "analyzed_jobs": "string"
+  },
+  "example_response": {
+    "total_posts_received": "sample string",
+    "posts_analyzed": "sample string",
+    "rows_written": "sample string",
+    "duplicates_skipped": "sample string",
+    "errors": "sample string",
+    "processing_summary": "sample string",
+    "analyzed_jobs": "sample string"
+  }
+}

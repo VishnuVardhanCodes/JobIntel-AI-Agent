@@ -1,0 +1,31 @@
+{
+  "agents": [
+    {
+      "agent_id": "69c8cb97355c81b0a9aa0488",
+      "name": "Job Analysis Agent",
+      "type": "sub_agent",
+      "node_id": "analysis_agent",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-6"
+    },
+    {
+      "agent_id": "69c8cb98a4d3fe6d4b283295",
+      "name": "Sheets Writer Agent",
+      "type": "sub_agent",
+      "node_id": "sheets_agent",
+      "provider": "anthropic",
+      "model": "claude-sonnet-4-6",
+      "tools": ["GOOGLESHEETS_GOOGLESHEETS_VALUES_APPEND", "GOOGLESHEETS_GOOGLESHEETS_VALUES_GET"]
+    },
+    {
+      "agent_id": "69c8cba8a264454f5f5ab4b3",
+      "name": "Job Intelligence Coordinator",
+      "type": "manager",
+      "node_id": "manager_agent",
+      "provider": "openai",
+      "model": "gpt-5.1",
+      "managed_agents": ["69c8cb97355c81b0a9aa0488", "69c8cb98a4d3fe6d4b283295"]
+    }
+  ],
+  "primary_agent_id": "69c8cba8a264454f5f5ab4b3"
+}
