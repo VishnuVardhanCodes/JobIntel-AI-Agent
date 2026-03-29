@@ -1,40 +1,73 @@
-import qdrant_client
-from qdrant_client.http import models
-from config import config, logger
+from qdrant_client import QdrantClient
+from qdrant_client.models import Distance, VectorParams, PointStruct
+import os
+import uuid
+from dotenv import load_dotenv
 
-class QdrantMemory:
-    """
-    Modular integration with Qdrant for vector-based memory and 
-    job duplicate detection.
-    """
-    def __init__(self, url, api_key):
-        self.client = qdrant_client.QdrantClient(url=url, api_key=api_key)
-        self.collection_name = "job_listings"
-        logger.info("Qdrant Memory Client initialized at %s", url)
+load_dotenv()
 
-    def create_collection(self):
-        """
-        Creates a collection if it doesn't exist.
-        """
-        logger.info("Creating collection: %s", self.collection_name)
-        # TODO: Implement collection creation logic
-        pass
+QDRANT_URL = os.getenv("QDRANT_URL")
+QDRANT_API_KEY = os.getenv("QDRANT_API_KEY")
 
-    def upsert_job(self, job_id, vector, metadata):
-        """
-        Upserts a job into the Qdrant database.
-        """
-        logger.info("Upserting Job ID: %s to Qdrant", job_id)
-        # TODO: Implement upsert logic
-        pass
+client = QdrantClient(
+    url=QDRANT_URL,
+    api_key=QDRANT_API_KEY
+)
 
-    def search_similar(self, query_vector, limit=5):
-        """
-        Searches for similar job listings to detect duplicates.
-        """
-        logger.info("Searching for similar jobs in Qdrant")
-        # TODO: Implement search logic
-        return []
+COLLECTION_NAME = "jobintel_memory"
 
-# Create a global instance
-# qdrant_memory = QdrantMemory(config.QDRANT_URL, config.QDRANT_API_KEY)
+
+def create_collection():
+    try:
+        client.get_collection(COLLECTION_NAME)
+        print("Collection already exists ✅")
+
+    except Exception:
+        client.create_collection(
+            collection_name=COLLECTION_NAME,
+            vectors_config=VectorParams(
+                size=384,
+                distance=Distance.COSINE
+            )
+        )
+        print("Collection created successfully ✅")
+
+
+# ✅ Check if job already exists
+def check_duplicate(vector):
+
+    search_result = client.query_points(
+        collection_name=COLLECTION_NAME,
+        query=vector,
+        limit=1
+    )
+
+    if search_result.points:
+        score = search_result.points[0].score
+
+        # If similarity high → duplicate
+        if score > 0.90:
+            print("⚠️ Duplicate job detected")
+            return True
+
+    return False
+
+
+# ✅ Store new job
+def store_job_embedding(vector):
+
+    client.upsert(
+        collection_name=COLLECTION_NAME,
+        points=[
+            PointStruct(
+                id=str(uuid.uuid4()),
+                vector=vector
+            )
+        ]
+    )
+
+    print("✅ Job stored in memory")
+
+
+if __name__ == "__main__":
+    create_collection() 

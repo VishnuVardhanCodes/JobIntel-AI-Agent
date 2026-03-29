@@ -1,32 +1,63 @@
-import google.auth
-from googleapiclient.discovery import build
-from config import config, logger
+import gspread
+from google.oauth2.service_account import Credentials
+import json
+import os
+from dotenv import load_dotenv
 
-class SheetsWriter:
-    """
-    Modular integration with Google Sheets for data persistence.
-    """
-    def __init__(self, sheet_id, credentials_file):
-        self.sheet_id = sheet_id
-        self.credentials_file = credentials_file
-        # self.service = build('sheets', 'v4', credentials=credentials)
-        logger.info("Sheets Writer initialized for Sheet ID: %s", self.sheet_id)
+# Load environment variables
+load_dotenv()
 
-    def append_job_data(self, data_row):
-        """
-        Appends a row of processed job data to the linked Google Sheet.
-        """
-        logger.info("Appending job data: %s", data_row)
-        # TODO: Implement Sheets API write logic
-        return True
+# Get sheet ID
+GOOGLE_SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
 
-    def get_existing_data(self):
-        """
-        Fetches current Google Sheets data for checking duplicates.
-        """
-        logger.info("Fetching existing Google Sheets data.")
-        # TODO: Implement Sheets API read logic
-        return []
+# Google API scope
+scope = [
+    "https://www.googleapis.com/auth/spreadsheets",
+    "https://www.googleapis.com/auth/drive"
+]
 
-# Create a global instance
-# sheets_writer = SheetsWriter(config.GOOGLE_SHEET_ID, config.GOOGLE_CREDENTIALS_FILE)
+# Load credentials
+creds = Credentials.from_service_account_file(
+    "backend/service_account.json",
+    scopes=scope
+)
+
+client = gspread.authorize(creds)
+
+# Open sheet
+sheet = client.open_by_key(GOOGLE_SHEET_ID).sheet1
+
+
+def write_to_sheet(job_json):
+
+    # Convert JSON string to dictionary
+    data = json.loads(job_json)
+
+    # Get skills
+    skills = data.get("Primary Skills")
+
+    # If skills is string like '["Python","SQL"]'
+    if isinstance(skills, str):
+        try:
+            skills = json.loads(skills)
+        except:
+            pass
+
+    # If skills is list → convert to string
+    if isinstance(skills, list):
+        skills = ", ".join(skills)
+
+    # Create row
+    row = [
+        data.get("Role"),
+        data.get("Company Name"),
+        data.get("Location"),
+        skills,
+        data.get("Years of Experience"),
+        data.get("Email")
+    ]
+
+    # Write row to Google Sheet
+    sheet.append_row(row)
+
+    print("✅ Data written to Google Sheet successfully")

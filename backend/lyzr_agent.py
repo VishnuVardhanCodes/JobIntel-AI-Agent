@@ -1,30 +1,59 @@
-from lyzr_automata import Agent, Task, Workflow
-from config import config, logger
+from dotenv import load_dotenv
+import os
+import litellm
 
-class LyzrAgent:
+# Load .env
+load_dotenv()
+
+# Set Groq key
+litellm.api_key = os.getenv("GROQ_API_KEY")
+litellm.api_base = "https://api.groq.com/openai/v1"
+
+
+def extract_job_data(post_text):
+
+    prompt = f"""
+    Extract structured job information from this LinkedIn post.
+
+    Return ONLY valid JSON.
+    Do NOT return code.
+    Do NOT explain anything.
+    Do NOT include markdown.
+    Return JSON only.
+
+    Fields:
+    Role
+    Company Name
+    Location
+    Primary Skills
+    Years of Experience
+    Email
+
+    LinkedIn Post:
+    {post_text}
     """
-    Lyzr SDK integration for job intelligence extraction.
-    This class will coordinate the AI agent's logic.
+
+    response = litellm.completion(
+    model="groq/llama-3.1-8b-instant",
+        messages=[
+            {"role": "user", "content": prompt}
+        ]
+    )
+
+    return response['choices'][0]['message']['content']
+
+
+# Test
+if __name__ == "__main__":
+
+    test_post = """
+    Hiring Python Intern at ABC Tech, Hyderabad.
+    Skills: Python, FastAPI, SQL.
+    Experience: 0-1 years.
+    Send resume to hr@abctech.com
     """
-    def __init__(self, api_key):
-        self.api_key = api_key
-        logger.info("Lyzr Agent initialized with API: %s", self.api_key)
 
-    def extract_job_intelligence(self, raw_job_data):
-        """
-        Processes raw job data via Lyzr agents to extract specific insights.
-        """
-        logger.info("Extracting intelligence from raw data.")
-        # TODO: Implement Lyzr agent architecture
-        return {"job_id": raw_job_data.get("id"), "intelligence": "AI extracted insights"}
+    result = extract_job_data(test_post)
 
-    def generate_interview_guide(self, job_title, job_description):
-        """
-        Generates interview guides based on job details.
-        """
-        logger.info("Generating interview guide for job title: %s", job_title)
-        # TODO: Implement guide generation
-        return "Interview Guide Content"
-
-# Create a global instance
-# lyzr_agent = LyzrAgent(config.LYZR_API_KEY)
+    print("\nExtracted Data:\n")
+    print(result)
