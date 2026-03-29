@@ -4,19 +4,15 @@ import json
 import os
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-# Get sheet ID
 GOOGLE_SHEET_ID = os.getenv("GOOGLE_SHEET_ID")
 
-# Google API scope
 scope = [
     "https://www.googleapis.com/auth/spreadsheets",
     "https://www.googleapis.com/auth/drive"
 ]
 
-# Load credentials
 creds = Credentials.from_service_account_file(
     "backend/service_account.json",
     scopes=scope
@@ -24,30 +20,20 @@ creds = Credentials.from_service_account_file(
 
 client = gspread.authorize(creds)
 
-# Open sheet
 sheet = client.open_by_key(GOOGLE_SHEET_ID).sheet1
 
 
 def write_to_sheet(job_json):
 
-    # Convert JSON string to dictionary
     data = json.loads(job_json)
 
-    # Get skills
+    # Handle skills properly
     skills = data.get("Primary Skills")
 
-    # If skills is string like '["Python","SQL"]'
-    if isinstance(skills, str):
-        try:
-            skills = json.loads(skills)
-        except:
-            pass
-
-    # If skills is list → convert to string
     if isinstance(skills, list):
         skills = ", ".join(skills)
 
-    # Create row
+    # Row data
     row = [
         data.get("Role"),
         data.get("Company Name"),
@@ -57,7 +43,7 @@ def write_to_sheet(job_json):
         data.get("Email")
     ]
 
-    # Write row to Google Sheet
-    sheet.append_row(row)
+    # Append properly under headers
+    sheet.append_row(row, value_input_option="USER_ENTERED")
 
     print("✅ Data written to Google Sheet successfully")
