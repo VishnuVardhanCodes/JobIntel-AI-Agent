@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import { Toaster } from 'sonner'
 import ErrorBoundary from '@/components/ErrorBoundary'
 import { AgentInterceptorProvider } from '@/components/AgentInterceptorProvider'
 import { HydrationGuard } from '@/components/HydrationGuard'
@@ -17,6 +18,7 @@ export default function ClientProviders({ children }: { children: React.ReactNod
       <AgentInterceptorProvider>
         <HydrationGuard>
           {children}
+          <Toaster position="top-right" richColors expand={true} theme="dark" />
         </HydrationGuard>
       </AgentInterceptorProvider>
     </ErrorBoundary>

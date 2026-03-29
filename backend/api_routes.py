@@ -1,34 +1,41 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, BackgroundTasks
+from pydantic import BaseModel
 from config import logger
+from main_pipeline import run_pipeline
+from state import agent_state
+import json
 
 router = APIRouter()
+
+class RunAgentRequest(BaseModel):
+    keyword: str
 
 @router.get("/status")
 async def get_status():
     """
-    Check the status of the backend API.
+    Returns agent status
     """
     logger.info("Status endpoint requested.")
-    return {"status": "JobIntel AI Backend is online."}
+    # Add jobs list to status if needed, but we have a separate /jobs
+    return agent_state.get_dict()
 
-@router.post("/scrape")
-async def handle_scrape(job_url: str):
+@router.post("/run-agent")
+async def handle_run_agent(request: RunAgentRequest, background_tasks: BackgroundTasks):
     """
-    Endpoint for scraping and processing a specific job URL.
+    Runs the job extraction pipeline
     """
-    logger.info("Scraping Job URL: %s via API", job_url)
-    try:
-        # TODO: Link with LinkedInScraper and LyzrAgent
-        return {"job_id": job_url, "processed": True}
-    except Exception as e:
-        logger.error("Error scraping job URL: %s", str(e))
-        raise HTTPException(status_code=500, detail="Internal Server Error")
+    logger.info("Running agent for keyword: %s", request.keyword)
+    
+    # Run in background to avoid timeout
+    # run_pipeline now handles its own status via agent_state.start/stop_running()
+    background_tasks.add_task(run_pipeline, request.keyword)
+    
+    return {"message": "Agent started successfully", "keyword": request.keyword}
 
 @router.get("/jobs")
-async def get_processed_jobs():
+async def get_jobs():
     """
-    Fetches processed job intelligence.
+    Returns processed jobs
     """
     logger.info("Fetching all jobs via API.")
-    # TODO: Fetch from memory (Qdrant or sheets)
-    return []
+    return agent_state.jobs

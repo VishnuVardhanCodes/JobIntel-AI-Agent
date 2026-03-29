@@ -1,6 +1,6 @@
 # Dependencies
-/node_modules
-/.pnp
+node_modules/
+.pnp/
 .pnp.js
 .yarn/install-state.gz
 
@@ -8,7 +8,7 @@
 /coverage
 
 # Next.js
-/.next/
+.next/
 /out/
 
 # Production

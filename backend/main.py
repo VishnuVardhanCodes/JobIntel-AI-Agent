@@ -1,30 +1,35 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from api_routes import router as api_router
 from config import logger
+from contextlib import asynccontextmanager
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Startup logic
+    logger.info("JobIntel AI Backend Starting Up...")
+    yield
+    # Shutdown logic
+    logger.info("JobIntel AI Backend Shutting Down...")
 
 # Initialize FastAPI App
 app = FastAPI(
     title="JobIntel AI Backend",
     description="Automated LinkedIn Job Intelligence and Analysis Platform",
+    lifespan=lifespan
 )
 
-# Include the modular API routes
-app.include_router(api_router, prefix="/api/v1")
+# Enable CORS for frontend communication
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # In production, replace with specific origins
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.on_event("startup")
-async def startup_event():
-    """
-    Log app startup and initialize dependencies.
-    """
-    logger.info("JobIntel AI Backend Starting Up...")
-    # TODO: Add logic for pre-loading models or connecting to DBs
-
-@app.on_event("shutdown")
-async def shutdown_event():
-    """
-    Log app shutdown and cleanup resources.
-    """
-    logger.info("JobIntel AI Backend Shutting Down...")
+# Include the modular API routes (No prefix to match frontend calls)
+app.include_router(api_router)
 
 @app.get("/")
 async def root():
