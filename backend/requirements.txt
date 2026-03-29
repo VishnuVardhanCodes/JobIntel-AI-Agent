@@ -1,0 +1,11 @@
+fastapi
+uvicorn
+python-dotenv
+pydantic
+pydantic-settings
+requests
+lyzr-automata
+qdrant-client
+google-auth
+google-api-python-client
+logging

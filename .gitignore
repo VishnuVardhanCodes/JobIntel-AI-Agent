@@ -37,3 +37,18 @@ next-env.d.ts
 # IDE
 .idea/
 .vscode/
+
+# Python
+__pycache__/
+*.pyc
+
+# Backend Secrets
+backend/service_account.json
+service_account.json
+
+# Environment files
+.env
+backend/.env
+
+# Logs
+*.log
