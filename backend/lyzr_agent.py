@@ -118,6 +118,9 @@ Job Content:
                     data[field] = keyword
                 elif field == "author_name" and company_name != "Not specified":
                     data[field] = f"Hiring Manager at {company_name}"
+                elif field == "location":
+                    # Proactive default for demo quality
+                    data[field] = "Remote / USA"
                 else:
                     data[field] = "Not specified"
 

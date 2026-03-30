@@ -36,7 +36,7 @@ def run_pipeline(keyword="Python Intern"):
 
                 # 3. Extract 18 fields using Lyzr Agent
                 # We combine titles/descriptions for better extraction
-                full_text = f"Role: {job.get('role')}\nCompany: {job.get('company_name')}\nContent: {job.get('description')}"
+                full_text = f"Role: {job.get('role')}\nCompany: {job.get('company_name')}\nLocation: {job.get('location')}\nContent: {job.get('description')}"
                 
                 extracted_json = extract_job_data(full_text, keyword=keyword)
                 extracted_data = json.loads(extracted_json)
@@ -47,10 +47,12 @@ def run_pipeline(keyword="Python Intern"):
                 extracted_data["post_url"] = job.get("post_url", extracted_data.get("post_url"))
                 extracted_data["author_linkedin_url"] = job.get("author_linkedin_url", extracted_data.get("author_linkedin_url"))
                 
+                if extracted_data.get("location") == "Not specified":
+                    extracted_data["location"] = job.get("location", "Remote / Not specified")
                 if extracted_data.get("author_name") == "Not specified":
                     extracted_data["author_name"] = job.get("author_name", "Not specified")
                 if extracted_data.get("date_posted") == "Not specified":
-                    extracted_data["date_posted"] = job.get("date_posted", "Not specified")
+                    extracted_data["date_posted"] = job.get("date_posted", "Recent")
 
                 logger.info(f"🔗 Preserved Original URL: {extracted_data['post_url']}")
 

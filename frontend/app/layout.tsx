@@ -5,11 +5,13 @@ import './globals.css'
 import { IframeLoggerInit } from '@/components/IframeLoggerInit'
 import ClientProviders from '@/components/ClientProviders'
 
+import { BackgroundGradient } from '@/components/BackgroundGradient'
+
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Next.js App',
-  description: 'Built with Next.js, React, and Tailwind CSS',
+  title: 'JobIntel AI | Orchestrated Intelligence',
+  description: 'Autonomous job market intelligence platform powered by Lyzr AI',
   icons: {
     icon: '/lyzr.png',
   },
@@ -23,7 +25,8 @@ export default function RootLayout({
   const isPaidUser = process.env.IS_PAID_USER === 'true'
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={inter.className} suppressHydrationWarning>
+      <body className={`${inter.className} bg-[#030303] text-white antialiased`} suppressHydrationWarning>
+        <BackgroundGradient />
         <IframeLoggerInit />
         <ClientProviders>
           {children}
